@@ -19,3 +19,10 @@ func (gameObject *gameObject) X() float64 {
 func (gameObject *gameObject) Y() float64 {
 	return gameObject.y
 }
+
+func (gameObject *gameObject) SetX(x float64) {
+	gameObject.x = x
+}
+func (gameObject *gameObject) SetY(y float64) {
+	gameObject.y = y
+}

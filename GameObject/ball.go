@@ -1,4 +1,12 @@
 package gameobject
+
+import (
+	"image/color"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
+)
+
 type Ball struct {
 	gameObject
 	speedx float64
@@ -6,9 +14,21 @@ type Ball struct {
 	Size   float64
 }
 
-func (ball *Ball) Update(screenWidth,screenHeight int,jao *Jao) {
-	//debug cfg
-	ball.Size=16
+func NewBall(screenWidth, screenHeight float64) Ball {
+	var b Ball
+	b.SetX(screenWidth / 2)
+	b.SetY(screenHeight / 2)
+	b.SetSpeed(1, -1)
+	b.Size = 16
+	return b
+}
+func (ball *Ball) SetSpeed(x, y float64) {
+	ball.speedx = x
+	ball.speedy = y
+}
+
+func (ball *Ball) Update(screenWidth, screenHeight int, jao *Jao) {
+
 	// 移動球
 	ball.x += ball.speedx
 	ball.y += ball.speedy
@@ -21,16 +41,14 @@ func (ball *Ball) Update(screenWidth,screenHeight int,jao *Jao) {
 		ball.speedy = -ball.speedy
 	}
 
-	// 檢查球是否碰到皮卡丘
-	if g.ballY+ballSize/2 > g.pikachuY && g.ballX > g.pikachuX-pikachuSize/2 && g.ballX < g.pikachuX+pikachuSize/2 {
-		g.ballSpeedY = -g.ballSpeedY
+	// 檢查球是否碰到饒
+	//
+	if ball.y+ball.Size/2 > jao.y && ball.x > jao.x-jao.Size/2 && ball.x < jao.x+jao.Size/2 {
+		ball.speedy = -ball.speedy
 	}
 
-	// 檢查球是否碰到底部，如果碰到，遊戲結束
-	if g.ballY+ballSize/2 > screenHeight {
-		g.gameOver = true
-	}
 }
-func (ball *Ball) Draw() {
+func (ball *Ball) Draw(screen *ebiten.Image) {
+	vector.DrawFilledRect(screen, float32(ball.x-ball.Size/2), float32(ball.y-ball.Size/2), float32(ball.Size), float32(ball.Size), color.RGBA{255, 0, 0, 255}, true)
 
 }

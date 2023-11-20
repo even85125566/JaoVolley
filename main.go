@@ -6,29 +6,21 @@ import (
 	gameobject "jaovolleyball/GameObject"
 	input "jaovolleyball/Input"
 	"log"
-	"math/rand"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
 	screenWidth  = 640
 	screenHeight = 480
-	pikachuSize  = 64
 )
 
 type Game struct {
-	Input                  input.Input
-	Jao                    gameobject.Jao
-	Ball                   gameobject.Ball
-	Mod                    gamemanage.GameMod
-	pikachuX, pikachuY     float64
-	ballX, ballY           float64
-	ballSpeedX, ballSpeedY float64
-	gameOver               bool
+	Input input.Input
+	Jao   gameobject.Jao
+	Ball  gameobject.Ball
+	Mod   gamemanage.GameMod
 }
 
 func (g *Game) Update() error {
@@ -37,7 +29,15 @@ func (g *Game) Update() error {
 
 	case gamemanage.Gaming:
 
+		// 檢查球是否碰到底部，如果碰到，遊戲結束
+		g.Jao.Update(screenHeight)
+		g.Ball.Update(screenWidth, screenHeight, &g.Jao)
+		
+		if g.Ball.Y()+g.Ball.Size/2 > float64(screenHeight) {
+			g.Mod = gamemanage.GameOver
+		}
 	case gamemanage.GameOver:
+		//按空白建則繼續遊戲
 		if ebiten.IsKeyPressed(ebiten.KeyEnter) {
 			g.Restart()
 		}
@@ -49,14 +49,15 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	// 繪製背景
-	screen.Fill(color.RGBA{135, 206, 250, 255}) // 淡藍色
+	screen.Fill(color.RGBA{135, 206, 250, 255})
 
-	vector.DrawFilledRect(screen, float32(g.pikachuX-pikachuSize/2), float32(g.pikachuY-pikachuSize/2), pikachuSize, pikachuSize, color.RGBA{255, 215, 0, 255}, true)
 	// 繪製球
-	vector.DrawFilledRect(screen, float32(g.ballX-ballSize/2), float32(g.ballY-ballSize/2), ballSize, ballSize, color.RGBA{255, 0, 0, 255}, true)
+	g.Ball.Draw(screen)
+	//繪製饒
+	g.Jao.Draw(screen)
 
 	// 如果遊戲結束，顯示 Game Over
-	if g.gameOver {
+	if g.Mod == gamemanage.GameOver {
 		ebitenutil.DebugPrint(screen, "Game Over\nPress Enter to restart")
 	}
 }
@@ -66,23 +67,27 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (g *Game) Restart() {
-	g.pikachuX = screenWidth / 2
-	g.pikachuY = screenHeight - pikachuSize
-	g.ballX = screenWidth / 2
-	g.ballY = screenHeight / 2
-	g.ballSpeedX = 3
-	g.ballSpeedY = -3
-	g.gameOver = false
+	g.Jao.SetX(screenWidth / 2)
+	g.Jao.SetY(screenHeight - g.Jao.Size)
+	g.Ball.SetX(screenWidth / 2)
+	g.Ball.SetY(screenHeight / 2)
+	g.Ball.SetSpeed(3, -3)
+	g.Mod = gamemanage.Gaming
+
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
+	b := gameobject.NewBall(screenWidth, screenHeight)
+	j := gameobject.NewJao(screenWidth, screenHeight)
 
-	game := &Game{}
+	game := &Game{
+		Jao:  j,
+		Ball: b,
+	}
 	game.Restart()
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Pikachu Volleyball")
+	ebiten.SetWindowTitle("Jao Volleyball")
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
