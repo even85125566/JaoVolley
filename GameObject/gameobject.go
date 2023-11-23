@@ -1,10 +1,13 @@
 package gameobject
 
+import "github.com/hajimehoshi/ebiten/v2"
+
 type gameObject struct {
 	width  int
 	height int
 	x      float64
 	y      float64
+	image  *ebiten.Image
 }
 
 func (gameObject *gameObject) Width() int {

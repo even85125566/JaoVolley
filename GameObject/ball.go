@@ -1,25 +1,33 @@
 package gameobject
 
 import (
-	"image/color"
+	_ "image/png"
+	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Ball struct {
 	gameObject
 	speedx float64
 	speedy float64
-	Size   float64
 }
 
 func NewBall(screenWidth, screenHeight float64) Ball {
+	img, _, err := ebitenutil.NewImageFromFile("Images/volleyball.png")
+	if err != nil {
+		log.Fatal(err)
+       
+	}
+
 	var b Ball
+	b.image = img
 	b.SetX(screenWidth / 2)
 	b.SetY(screenHeight / 2)
-	b.SetSpeed(1, -1)
-	b.Size = 16
+	b.SetSpeed(3, -3)
+	b.width = img.Bounds().Dx()
+	b.height = img.Bounds().Dy()
 	return b
 }
 func (ball *Ball) SetSpeed(x, y float64) {
@@ -34,21 +42,22 @@ func (ball *Ball) Update(screenWidth, screenHeight int, jao *Jao) {
 	ball.y += ball.speedy
 
 	// 檢查球是否碰到畫面邊緣
-	if ball.x-ball.Size/2 < 0 || ball.x+ball.Size/2 > float64(screenWidth) {
+	if ball.x-float64(ball.width)/2 < 0 || ball.x+float64(ball.width)/2 > float64(screenWidth) {
 		ball.speedx = -ball.speedx
 	}
-	if ball.y-ball.Size/2 < 0 {
+	if ball.y-float64(ball.height)/2 < 0 {
 		ball.speedy = -ball.speedy
 	}
 
 	// 檢查球是否碰到饒
-	//
-	if ball.y+ball.Size/2 > jao.y && ball.x > jao.x-jao.Size/2 && ball.x < jao.x+jao.Size/2 {
+	if ball.y+float64(ball.height)/2 > jao.y && ball.x > jao.x-jao.Size/2 && ball.x < jao.x+jao.Size/2 {
 		ball.speedy = -ball.speedy
 	}
 
 }
-func (ball *Ball) Draw(screen *ebiten.Image) {
-	vector.DrawFilledRect(screen, float32(ball.x-ball.Size/2), float32(ball.y-ball.Size/2), float32(ball.Size), float32(ball.Size), color.RGBA{255, 0, 0, 255}, true)
+func (ball *Ball) Draw(screen *ebiten.Image, ScreenWidth, ScreenHeight int) {
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(ScreenWidth-ball.width)/2, float64(ScreenHeight-ball.height))
+	screen.DrawImage(ball.image, op)
 
 }

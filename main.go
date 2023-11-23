@@ -33,7 +33,7 @@ func (g *Game) Update() error {
 		g.Jao.Update(screenHeight)
 		g.Ball.Update(screenWidth, screenHeight, &g.Jao)
 		
-		if g.Ball.Y()+g.Ball.Size/2 > float64(screenHeight) {
+		if g.Ball.Y()+float64(g.Ball.Height())/2 > float64(screenHeight) {
 			g.Mod = gamemanage.GameOver
 		}
 	case gamemanage.GameOver:
@@ -52,7 +52,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{135, 206, 250, 255})
 
 	// 繪製球
-	g.Ball.Draw(screen)
+	g.Ball.Draw(screen,screenWidth,screenHeight)
 	//繪製饒
 	g.Jao.Draw(screen)
 
