@@ -1,34 +1,43 @@
 package gameobject
 
 import (
-	"image/color"
+	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Jao struct {
 	gameObject
-	OriginalY float64
 	speedx    float64
 	speedy    float64
 	jumpspeed float64
-	Size      float64
 	IsJumping bool
 }
 
 func NewJao(screenWidth, screenHeight float64) Jao {
+	img, _, err := ebitenutil.NewImageFromFile("Images/stickJaoleft.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var j Jao
-	j.Size = 64
-	j.SetX(screenWidth / 2)
-	j.SetY(screenHeight - j.Size)
+	j.image = img
+	j.width = img.Bounds().Dx()
+	j.height = img.Bounds().Dy()
+	j.SetX(float64(screenWidth-float64(j.width)) / 2)
+	j.SetY(screenHeight - float64(j.height))
 	j.speedx = 4
 	j.speedy = 4
 	j.jumpspeed = 8
 	j.IsJumping = false
 	return j
 }
-
+func (jao *Jao) Reset(screenWidth, screenHeight float64) {
+	jao.SetX(screenWidth / 2)
+	jao.SetY(screenHeight - float64(jao.Height()))
+	
+}
 func (jao *Jao) Update(screenHeight float64) {
 	// 控制饒的移動
 	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
@@ -47,8 +56,8 @@ func (jao *Jao) Update(screenHeight float64) {
 		jao.y += jao.speedy
 		//給予掉落效果 模擬重力
 		jao.speedy += 0.5
-		if jao.y > screenHeight-jao.Size {
-			jao.y = screenHeight - jao.Size
+		if jao.y > screenHeight-float64(jao.height) {
+			jao.y = screenHeight - float64(jao.height)
 			jao.IsJumping = false
 		}
 
@@ -56,6 +65,8 @@ func (jao *Jao) Update(screenHeight float64) {
 
 }
 func (jao *Jao) Draw(screen *ebiten.Image) {
-	vector.DrawFilledRect(screen, float32(jao.x-jao.Size/2), float32(jao.y-jao.Size/2), float32(jao.Size), float32(jao.Size), color.RGBA{255, 215, 0, 255}, true)
+	op := &ebiten.DrawImageOptions{}
 
+	op.GeoM.Translate(jao.x, jao.y)
+	screen.DrawImage(jao.image, op)
 }

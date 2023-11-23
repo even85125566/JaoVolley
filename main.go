@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	gamemanage "jaovolleyball/GameManage"
 	gameobject "jaovolleyball/GameObject"
@@ -32,8 +33,8 @@ func (g *Game) Update() error {
 		// 檢查球是否碰到底部，如果碰到，遊戲結束
 		g.Jao.Update(screenHeight)
 		g.Ball.Update(screenWidth, screenHeight, &g.Jao)
-		
-		if g.Ball.Y()+float64(g.Ball.Height())/2 > float64(screenHeight) {
+
+		if g.Ball.Y()+float64(g.Ball.Height()) > float64(screenHeight) {
 			g.Mod = gamemanage.GameOver
 		}
 	case gamemanage.GameOver:
@@ -52,7 +53,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{135, 206, 250, 255})
 
 	// 繪製球
-	g.Ball.Draw(screen,screenWidth,screenHeight)
+	g.Ball.Draw(screen, screenWidth, screenHeight)
+	ballProperty := fmt.Sprintf("ball width:%v,height:%v\n", g.Ball.Width(), g.Ball.Height())
+	ballLocation := fmt.Sprintf("ball x:%v,y:%v", g.Ball.X(), g.Ball.Y())
+	ebitenutil.DebugPrint(screen, ballProperty+ballLocation)
+
 	//繪製饒
 	g.Jao.Draw(screen)
 
@@ -67,11 +72,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (g *Game) Restart() {
-	g.Jao.SetX(screenWidth / 2)
-	g.Jao.SetY(screenHeight - g.Jao.Size)
-	g.Ball.SetX(screenWidth / 2)
-	g.Ball.SetY(screenHeight / 2)
-	g.Ball.SetSpeed(3, -3)
+	
+	g.Ball.Reset(screenWidth, screenHeight)
 	g.Mod = gamemanage.Gaming
 
 }
