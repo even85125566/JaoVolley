@@ -4,14 +4,18 @@ import (
 	"net"
 )
 
+const (
+	socketLocalHost = "localhost:8081"
+)
+
 type Network struct {
 	Con      net.Conn
 	IsClosed bool
 }
 
 func Connect() *Network {
-	// 连接到服务器
-	conn, err := net.Dial("tcp", "localhost:8081")
+	// 連線至伺服器
+	conn, err := net.Dial("tcp", socketLocalHost)
 	if err != nil {
 		return nil
 	}

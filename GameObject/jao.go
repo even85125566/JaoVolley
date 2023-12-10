@@ -9,8 +9,6 @@ import (
 
 type Jao struct {
 	gameObject
-	speedx    float64
-	speedy    float64
 	jumpspeed float64
 	IsJumping bool
 }
@@ -20,23 +18,20 @@ func NewJao(screenWidth, screenHeight float64) Jao {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	var j Jao
 	j.image = img
 	j.width = img.Bounds().Dx()
 	j.height = img.Bounds().Dy()
-	j.SetX(float64(screenWidth-float64(j.width)) / 2)
-	j.SetY(screenHeight - float64(j.height))
-	j.speedx = 4
-	j.speedy = 4
-	j.jumpspeed = 8
-	j.IsJumping = false
+	j.Reset(screenWidth, screenHeight)
 	return j
 }
 func (jao *Jao) Reset(screenWidth, screenHeight float64) {
 	jao.SetX(screenWidth / 2)
 	jao.SetY(screenHeight - float64(jao.Height()))
-	
+	jao.SetSpeed(4, 4)
+	jao.SetGravity(0.5)
+	jao.jumpspeed = 8
+	jao.IsJumping = false
 }
 func (jao *Jao) Update(screenHeight float64) {
 	// 控制饒的移動
@@ -55,7 +50,7 @@ func (jao *Jao) Update(screenHeight float64) {
 	if jao.IsJumping {
 		jao.y += jao.speedy
 		//給予掉落效果 模擬重力
-		jao.speedy += 0.5
+		jao.speedy += jao.gravity
 		if jao.y > screenHeight-float64(jao.height) {
 			jao.y = screenHeight - float64(jao.height)
 			jao.IsJumping = false
