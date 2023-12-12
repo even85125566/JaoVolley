@@ -3,6 +3,7 @@ package gameobject
 import (
 	_ "image/png"
 	"log"
+	"math"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -38,7 +39,9 @@ func (ball *Ball) Reset(screenWidth, screenHeight float64) {
 	ball.SetSpeed(3, 3)
 	ball.SetGravity(0.05)
 }
-
+func (ball *Ball) BeCollided() bool {
+	return ball.canBeCollided
+}
 
 func (ball *Ball) Update(screenWidth, screenHeight int, jao *Jao) {
 
@@ -61,16 +64,30 @@ func (ball *Ball) Update(screenWidth, screenHeight int, jao *Jao) {
 		ball.speedy = -ball.speedy
 	}
 	// 檢查球是否碰到饒
-	if ball.canBeCollided {
-		// 需檢查三面
+	if ball.canBeCollided && ball.y+float64(ball.height) > jao.y {
 		switch {
-		// 頭
-		case ball.y+float64(ball.height) > jao.y && ball.x > jao.x && ball.x < jao.x+float64(jao.width):
-			ball.speedx = ball.speedx - jao.speedx
+		// 左半邊
+		case ball.x+float64(ball.width) > jao.x && ball.x+float64(ball.width) < jao.x+float64(jao.width/2):
+			ball.speedx = -math.Abs(ball.speedx)
 			ball.speedy = -ball.speedy
+			ball.canBeCollided = false
+			ball.collidedTime = time.Now()
+			log.Printf("碰撞左區,球的X:%v,球的Y:%v,饒的X:%v,饒的Y:%v", ball.x, ball.y, jao.x, jao.y)
+			log.Printf("碰撞左區,球的X+球寬:%v,饒的X:%v,饒的X+一半饒寬:%v", ball.x+float64(ball.width), jao.x, jao.x+float64(jao.width/2))
+
+			//右半邊
+		case ball.x > jao.x+float64(jao.width/2) && ball.x < jao.x+float64(jao.width):
+			ball.speedx = math.Abs(ball.speedx)
+			ball.speedy = -ball.speedy
+			ball.canBeCollided = false
+			ball.collidedTime = time.Now()
+			log.Printf("碰撞右區,球的X:%v,球的Y:%v,饒的X:%v,饒的Y:%v", ball.x, ball.y, jao.x, jao.y)
+			log.Printf("碰撞右區,球的X:%v,饒的X+一半饒寬:%v,饒的X+饒寬:%v", ball.x, jao.x+float64(jao.width/2), jao.x+float64(jao.width))
+		default:
+			log.Printf("低於碰撞區,球的X:%v.球的Y:%v,饒的X:%v,饒的Y:%v", ball.x, ball.y, jao.x, jao.y)
+			log.Printf("低於碰撞區,球的X:%v,球的X+球寬:%v,饒的X:%v,饒的X+一半饒寬:%v", ball.x, ball.x+float64(ball.width), jao.x, jao.x+float64(jao.width/2))
+
 		}
-		ball.canBeCollided = false
-		ball.collidedTime = time.Now()
 
 	}
 

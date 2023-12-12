@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"image/color"
+	gamelog "jaovolleyball/GameLog"
 	gamemanage "jaovolleyball/GameManage"
 	gameobject "jaovolleyball/GameObject"
 	input "jaovolleyball/Input"
@@ -20,12 +20,13 @@ const (
 )
 
 type Game struct {
-	Input   input.Input
-	Jao     gameobject.Jao
-	Ball    gameobject.Ball
-	Mod     gamemanage.GameMod
-	Network *socket.Network
-	ErrMsg  []string
+	Input      input.Input
+	Jao        gameobject.Jao
+	Ball       gameobject.Ball
+	Mod        gamemanage.GameMod
+	Network    *socket.Network
+	Background *ebiten.Image
+	ErrMsg     []string
 }
 
 func (g *Game) Update() error {
@@ -58,8 +59,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	// 繪製背景
-	screen.Fill(color.RGBA{135, 206, 250, 255})
-
+	screen.DrawImage(g.Background, nil)
 	// 繪製球
 	g.Ball.Draw(screen, screenWidth, screenHeight)
 	//繪製饒
@@ -71,9 +71,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	ballProperty := fmt.Sprintf("ball width:%v,height:%v\n", g.Ball.Width(), g.Ball.Height())
 	ballLocation := fmt.Sprintf("ball x:%v,y:%v\n", g.Ball.X(), g.Ball.Y())
+	ballBeCollide := fmt.Sprintf("ballCollide:%v\n", g.Ball.BeCollided())
 	jaoLocation := fmt.Sprintf("jao x:%v,y:%v", g.Jao.X(), g.Jao.Y())
 
-	ebitenutil.DebugPrint(screen, ballProperty+ballLocation+jaoLocation)
+	ebitenutil.DebugPrint(screen, ballProperty+ballLocation+ballBeCollide+jaoLocation)
 
 	// 如果遊戲結束，顯示 Game Over
 	if g.Mod == gamemanage.GameOver {
@@ -93,23 +94,38 @@ func (g *Game) Restart() {
 
 }
 
+func (g *Game) SetDebugMode() {
+	ebiten.SetTPS(10)
+}
+
 func main() {
+	//遊戲紀錄
+	if err := gamelog.InitLogger(); err != nil {
+		log.Fatal(err)
+	}
+	defer gamelog.CloseLogger() // 确保在程序退出前关闭日志文件
 	b := gameobject.NewBall(screenWidth, screenHeight)
 	j := gameobject.NewJao(screenWidth, screenHeight)
 	s := []string{}
+	//處理背景圖片
+	img, _, err := ebitenutil.NewImageFromFile("Images/background.png")
+	if err != nil {
+		log.Fatal(err)
+	}
 	//處理網路連線
 	conn := socket.Connect()
 	defer conn.Close()
 	//初始化結構體
 	game := &Game{
-		Jao:     j,
-		Ball:    b,
-		ErrMsg:  s,
-		Network: conn,
+		Jao:        j,
+		Ball:       b,
+		ErrMsg:     s,
+		Network:    conn,
+		Background: img,
 	}
 	//重啟遊戲達成初始化
 	game.Restart()
-	ebiten.SetTPS(10)
+	game.SetDebugMode()
 	//設置視窗大小及標題
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Jao Volleyball")
