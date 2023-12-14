@@ -125,7 +125,7 @@ func main() {
 	}
 	//重啟遊戲達成初始化
 	game.Restart()
-	game.SetDebugMode()
+	// game.SetDebugMode()
 	//設置視窗大小及標題
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Jao Volleyball")

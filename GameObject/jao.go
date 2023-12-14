@@ -8,7 +8,7 @@ import (
 )
 
 type Jao struct {
-	gameObject
+	GameObject
 	jumpspeed float64
 	IsJumping bool
 }

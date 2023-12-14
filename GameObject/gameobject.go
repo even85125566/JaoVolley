@@ -2,7 +2,7 @@ package gameobject
 
 import "github.com/hajimehoshi/ebiten/v2"
 
-type gameObject struct {
+type GameObject struct {
 	width   int
 	height  int
 	x       float64
@@ -13,29 +13,45 @@ type gameObject struct {
 	image   *ebiten.Image
 }
 
-func (gameObject *gameObject) Width() int {
+func (gameObject *GameObject) Width() int {
 	return gameObject.width
 }
-func (gameObject *gameObject) Height() int {
+func (gameObject *GameObject) Height() int {
 	return gameObject.height
 }
-func (gameObject *gameObject) X() float64 {
+func (gameObject *GameObject) X() float64 {
 	return gameObject.x
 }
-func (gameObject *gameObject) Y() float64 {
+func (gameObject *GameObject) Y() float64 {
 	return gameObject.y
 }
 
-func (gameObject *gameObject) SetX(x float64) {
+func (gameObject *GameObject) SetX(x float64) {
 	gameObject.x = x
 }
-func (gameObject *gameObject) SetY(y float64) {
+func (gameObject *GameObject) SetY(y float64) {
 	gameObject.y = y
 }
-func (gameObject *gameObject) SetSpeed(speedx, speedy float64) {
+func (gameObject *GameObject) SetSpeed(speedx, speedy float64) {
 	gameObject.speedx = speedx
 	gameObject.speedy = speedy
 }
-func (gameObject *gameObject) SetGravity(gravity float64) {
+func (gameObject *GameObject) SetGravity(gravity float64) {
 	gameObject.gravity = gravity
+}
+
+func (gameObject *GameObject) RightSide() GameObject {
+	var newObject GameObject
+	newObject = *gameObject
+	newObject.x = gameObject.x + float64(gameObject.width/2)
+	newObject.width = gameObject.width / 2
+	return newObject
+
+}
+func (gameObject *GameObject) LeftSide() GameObject {
+	var newObject GameObject
+	newObject = *gameObject
+	newObject.width = gameObject.width / 2
+	return newObject
+
 }
