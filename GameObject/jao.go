@@ -41,7 +41,7 @@ func NewJao(jaoType Type, screenWidth, screenHeight float64) Jao {
 	default:
 		j.image = nil
 	}
-
+	j.Type = jaoType
 	j.width = j.image.Bounds().Dx()
 	j.height = j.image.Bounds().Dy()
 	j.Reset(screenWidth, screenHeight)
@@ -52,11 +52,12 @@ func (jao *Jao) Reset(screenWidth, screenHeight float64) {
 	case Left:
 		jao.SetX(0)
 	case Right:
-		jao.SetX(screenWidth )
+		jao.SetX(screenWidth - float64(jao.width))
 	default:
 		jao.SetX(screenWidth / 2)
 
 	}
+	log.Printf("reset饒方向%v", jao.Type)
 
 	jao.SetY(screenHeight - float64(jao.Height()))
 	jao.SetSpeed(4, 4)

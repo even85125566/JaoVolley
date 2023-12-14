@@ -90,10 +90,11 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (g *Game) Restart() {
-
+	log.Printf("jaoList:%+v", g.Jao)
 	g.Ball.Reset(screenWidth, screenHeight)
 	for i := 0; i < len(g.Jao); i++ {
 		g.Jao[i].Reset(screenWidth, screenHeight)
+		log.Printf("reset:%v", g.Jao[i])
 	}
 	g.Mod = gamemanage.Gaming
 
@@ -111,6 +112,7 @@ func main() {
 	defer gamelog.CloseLogger() // 确保在程序退出前关闭日志文件
 	b := gameobject.NewBall(screenWidth, screenHeight)
 	j := gameobject.NewJao(gameobject.Left, screenWidth, screenHeight)
+	jr := gameobject.NewJao(gameobject.Right, screenWidth, screenHeight)
 	s := []string{}
 	//處理背景圖片
 	img, _, err := ebitenutil.NewImageFromFile("Images/background.png")
@@ -122,7 +124,8 @@ func main() {
 	defer conn.Close()
 	//初始化雙饒
 	var jaoList []gameobject.Jao
-	jaoList = append(jaoList, j)
+	jaoList = append(jaoList, j, jr)
+
 	//初始化結構體
 	game := &Game{
 		Jao:        jaoList,
