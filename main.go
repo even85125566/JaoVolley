@@ -21,7 +21,7 @@ const (
 
 type Game struct {
 	Input      input.Input
-	Jao        gameobject.Jao
+	Jao        []gameobject.Jao
 	Ball       gameobject.Ball
 	Mod        gamemanage.GameMod
 	Network    *socket.Network
@@ -36,8 +36,10 @@ func (g *Game) Update() error {
 	case gamemanage.Gaming:
 
 		// 檢查球是否碰到底部，如果碰到，遊戲結束
-		g.Jao.Update(screenHeight)
-		g.Ball.Update(screenWidth, screenHeight, &g.Jao)
+		for i := 0; i < len(g.Jao); i++ {
+			g.Jao[i].Update(screenHeight)
+		}
+		g.Ball.Update(screenWidth, screenHeight, g.Jao)
 
 		if g.Ball.Y()+float64(g.Ball.Height()) > float64(screenHeight) {
 			g.Mod = gamemanage.GameOver
@@ -63,7 +65,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// 繪製球
 	g.Ball.Draw(screen, screenWidth, screenHeight)
 	//繪製饒
-	g.Jao.Draw(screen)
+	for i := 0; i < len(g.Jao); i++ {
+		g.Jao[i].Draw(screen)
+	}
 	if len(g.ErrMsg) != 0 {
 		errMsg := fmt.Sprintf("errmsg:%s", g.ErrMsg[0])
 		ebitenutil.DebugPrint(screen, errMsg)
@@ -72,9 +76,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	ballProperty := fmt.Sprintf("ball width:%v,height:%v\n", g.Ball.Width(), g.Ball.Height())
 	ballLocation := fmt.Sprintf("ball x:%v,y:%v\n", g.Ball.X(), g.Ball.Y())
 	ballBeCollide := fmt.Sprintf("ballCollide:%v\n", g.Ball.BeCollided())
-	jaoLocation := fmt.Sprintf("jao x:%v,y:%v", g.Jao.X(), g.Jao.Y())
 
-	ebitenutil.DebugPrint(screen, ballProperty+ballLocation+ballBeCollide+jaoLocation)
+	ebitenutil.DebugPrint(screen, ballProperty+ballLocation+ballBeCollide)
 
 	// 如果遊戲結束，顯示 Game Over
 	if g.Mod == gamemanage.GameOver {
@@ -89,7 +92,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func (g *Game) Restart() {
 
 	g.Ball.Reset(screenWidth, screenHeight)
-	g.Jao.Reset(screenWidth, screenHeight)
+	for i := 0; i < len(g.Jao); i++ {
+		g.Jao[i].Reset(screenWidth, screenHeight)
+	}
 	g.Mod = gamemanage.Gaming
 
 }
@@ -105,7 +110,7 @@ func main() {
 	}
 	defer gamelog.CloseLogger() // 确保在程序退出前关闭日志文件
 	b := gameobject.NewBall(screenWidth, screenHeight)
-	j := gameobject.NewJao(screenWidth, screenHeight)
+	j := gameobject.NewJao(gameobject.Left, screenWidth, screenHeight)
 	s := []string{}
 	//處理背景圖片
 	img, _, err := ebitenutil.NewImageFromFile("Images/background.png")
@@ -115,9 +120,12 @@ func main() {
 	//處理網路連線
 	conn := socket.Connect()
 	defer conn.Close()
+	//初始化雙饒
+	var jaoList []gameobject.Jao
+	jaoList = append(jaoList, j)
 	//初始化結構體
 	game := &Game{
-		Jao:        j,
+		Jao:        jaoList,
 		Ball:       b,
 		ErrMsg:     s,
 		Network:    conn,

@@ -34,8 +34,8 @@ func NewBall(screenWidth, screenHeight float64) Ball {
 }
 
 func (ball *Ball) Reset(screenWidth, screenHeight float64) {
-	ball.SetX(screenWidth / 2)
-	ball.SetY(screenHeight / 5)
+	ball.SetX(0)
+	ball.SetY(10)
 	ball.SetSpeed(3, 3)
 	ball.SetGravity(0.05)
 }
@@ -43,7 +43,7 @@ func (ball *Ball) BeCollided() bool {
 	return ball.canBeCollided
 }
 
-func (ball *Ball) Update(screenWidth, screenHeight int, jao *Jao) {
+func (ball *Ball) Update(screenWidth, screenHeight int, jao []Jao) {
 
 	// 移動球
 	ball.x += ball.speedx
@@ -65,26 +65,31 @@ func (ball *Ball) Update(screenWidth, screenHeight int, jao *Jao) {
 	}
 	// 檢查球是否碰到饒
 	//TODO:身體下半部處理
-	if ball.canBeCollided && ball.y+float64(ball.height) > jao.y {
 
-		switch {
-		// 左半邊
-		case IsOverlap(jao.LeftSide(), ball.GameObject):
-			ball.speedx = -math.Abs(ball.speedx)
-			ball.speedy = -ball.speedy
-			ball.canBeCollided = false
-			ball.collidedTime = time.Now()
+	for i := 0; i < len(jao); i++ {
+		
+		if ball.canBeCollided && ball.y+float64(ball.height) > jao[i].y {
 
-			//右半邊
-		case IsOverlap(jao.RightSide(), ball.GameObject):
-			ball.speedx = math.Abs(ball.speedx)
-			ball.speedy = -ball.speedy
-			ball.canBeCollided = false
-			ball.collidedTime = time.Now()
-
-		default:
-
-		}
+			switch {
+			// 左半邊
+			case IsOverlap(jao[i].LeftSide(), ball.GameObject):
+				ball.speedx = -math.Abs(ball.speedx)
+				ball.speedy = -ball.speedy
+				ball.canBeCollided = false
+				ball.collidedTime = time.Now()
+	
+				//右半邊
+			case IsOverlap(jao[i].RightSide(), ball.GameObject):
+				ball.speedx = math.Abs(ball.speedx)
+				ball.speedy = -ball.speedy
+				ball.canBeCollided = false
+				ball.collidedTime = time.Now()
+	
+			default:
+	
+			}
+	}
+	
 
 	}
 
