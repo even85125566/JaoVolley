@@ -1,6 +1,8 @@
 package gameobject
 
 import (
+	"bytes"
+	resources "jaovolleyball/Resources"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -25,14 +27,14 @@ func NewJao(jaoType Type, screenWidth, screenHeight float64) Jao {
 	var j Jao
 	switch jaoType {
 	case Left:
-		img, _, err := ebitenutil.NewImageFromFile("Images/stickJaoleft.png")
+		img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(resources.StickJaoleft))
 		if err != nil {
 			log.Fatal(err)
 		}
 		j.image = img
 
 	case Right:
-		img, _, err := ebitenutil.NewImageFromFile("Images/stickJaoleft.png")
+		img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(resources.StickJaoright))
 		if err != nil {
 			log.Fatal(err)
 		}

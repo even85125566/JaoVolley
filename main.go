@@ -1,11 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	gamelog "jaovolleyball/GameLog"
 	gamemanage "jaovolleyball/GameManage"
 	gameobject "jaovolleyball/GameObject"
-	input "jaovolleyball/Input"
+	resources "jaovolleyball/Resources"
 	socket "jaovolleyball/Socket"
 	"log"
 
@@ -20,7 +21,6 @@ const (
 )
 
 type Game struct {
-	Input      input.Input
 	Jao        []gameobject.Jao
 	Ball       gameobject.Ball
 	Mod        gamemanage.GameMod
@@ -115,7 +115,7 @@ func main() {
 	jr := gameobject.NewJao(gameobject.Right, screenWidth, screenHeight)
 	s := []string{}
 	//處理背景圖片
-	img, _, err := ebitenutil.NewImageFromFile("Images/background.png")
+	img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(resources.Back))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -145,3 +145,9 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
+//go:generate go install github.com/hajimehoshi/file2byteslice
+//go:generate file2byteslice -input  Images/volleyball64.png -output resources/volleyball64.go -package resources -var Volleyball64
+//go:generate file2byteslice -input  Images/stickJaoleft.png -output resources/stickJaoleft.go -package resources -var StickJaoleft
+//go:generate file2byteslice -input  Images/stickJaoright.png -output resources/stickJaoright.go -package resources -var StickJaoright
+//go:generate file2byteslice -input  Images/back.png -output resources/back.go -package resources -var Back

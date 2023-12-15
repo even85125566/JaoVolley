@@ -1,7 +1,9 @@
 package gameobject
 
 import (
+	"bytes"
 	_ "image/png"
+	resources "jaovolleyball/Resources"
 	"log"
 	"math"
 	"time"
@@ -17,7 +19,7 @@ type Ball struct {
 }
 
 func NewBall(screenWidth, screenHeight float64) Ball {
-	img, _, err := ebitenutil.NewImageFromFile("Images/volleyball64.png")
+	img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(resources.Volleyball64))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,7 +69,7 @@ func (ball *Ball) Update(screenWidth, screenHeight int, jao []Jao) {
 	//TODO:身體下半部處理
 
 	for i := 0; i < len(jao); i++ {
-		
+
 		if ball.canBeCollided && ball.y+float64(ball.height) > jao[i].y {
 
 			switch {
@@ -77,19 +79,18 @@ func (ball *Ball) Update(screenWidth, screenHeight int, jao []Jao) {
 				ball.speedy = -ball.speedy
 				ball.canBeCollided = false
 				ball.collidedTime = time.Now()
-	
+
 				//右半邊
 			case IsOverlap(jao[i].RightSide(), ball.GameObject):
 				ball.speedx = math.Abs(ball.speedx)
 				ball.speedy = -ball.speedy
 				ball.canBeCollided = false
 				ball.collidedTime = time.Now()
-	
+
 			default:
-	
+
 			}
-	}
-	
+		}
 
 	}
 

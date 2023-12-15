@@ -1,8 +1,10 @@
 package gameobject
 
 
-type Wall struct {
+type VolleyNet struct {
+	GameObject
 	
 }
 
 //TODO:
+
