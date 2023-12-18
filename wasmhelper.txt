@@ -1,0 +1,12 @@
+如果是要在 Visual Studio Code 開啟的終端機中設定環境變數，因為它是基於 Power Shell，可以如下設定環境變數：
+$env:GOOS="js"
+$env:GOARCH="wasm"
+
+
+如果是在 Windows 的命令提示字元，就是使用 set 了：
+SET GOOS=js
+SET GOARCH=wasm
+
+
+最後終端機執行:
+go build -o test.wasm main.go

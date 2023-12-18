@@ -3,12 +3,10 @@ package main
 import (
 	"bytes"
 	"fmt"
-	gamelog "jaovolleyball/GameLog"
 	gamemanage "jaovolleyball/GameManage"
 	gameobject "jaovolleyball/GameObject"
 	resources "jaovolleyball/Resources"
 	socket "jaovolleyball/Socket"
-	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -90,11 +88,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (g *Game) Restart() {
-	log.Printf("jaoList:%+v", g.Jao)
 	g.Ball.Reset(screenWidth, screenHeight)
 	for i := 0; i < len(g.Jao); i++ {
 		g.Jao[i].Reset(screenWidth, screenHeight)
-		log.Printf("reset:%v", g.Jao[i])
 	}
 	g.Mod = gamemanage.Gaming
 
@@ -106,10 +102,10 @@ func (g *Game) SetDebugMode() {
 
 func main() {
 	//遊戲紀錄
-	if err := gamelog.InitLogger(); err != nil {
-		log.Fatal(err)
-	}
-	defer gamelog.CloseLogger() // 确保在程序退出前关闭日志文件
+	// if err := gamelog.InitLogger(); err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer gamelog.CloseLogger() // 确保在程序退出前关闭日志文件
 	b := gameobject.NewBall(screenWidth, screenHeight)
 	j := gameobject.NewJao(gameobject.Left, screenWidth, screenHeight)
 	jr := gameobject.NewJao(gameobject.Right, screenWidth, screenHeight)
@@ -117,7 +113,7 @@ func main() {
 	//處理背景圖片
 	img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(resources.Back))
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
 	}
 	//處理網路連線
 	conn := socket.Connect()
@@ -142,7 +138,7 @@ func main() {
 	ebiten.SetWindowTitle("Jao Volleyball")
 
 	if err := ebiten.RunGame(game); err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
 	}
 }
 
