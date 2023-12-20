@@ -23,6 +23,7 @@ type Game struct {
 	Ball       gameobject.Ball
 	Mod        gamemanage.GameMod
 	Network    *socket.Network
+	ImgMap     map[gamemanage.ImgType]*ebiten.Image
 	Background *ebiten.Image
 	ErrMsg     []string
 }
@@ -30,12 +31,14 @@ type Game struct {
 func (g *Game) Update() error {
 	switch g.Mod {
 	case gamemanage.GameTitle:
-
+		if ebiten.IsKeyPressed(ebiten.KeyEnter) {
+			g.Restart()
+		}
 	case gamemanage.Gaming:
 
 		// 檢查球是否碰到底部，如果碰到，遊戲結束
 		for i := 0; i < len(g.Jao); i++ {
-			g.Jao[i].Update(screenHeight)
+			g.Jao[i].Update(screenHeight,screenWidth)
 		}
 		g.Ball.Update(screenWidth, screenHeight, g.Jao)
 
@@ -58,29 +61,40 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	// 繪製背景
-	screen.DrawImage(g.Background, nil)
-	// 繪製球
-	g.Ball.Draw(screen, screenWidth, screenHeight)
-	//繪製饒
-	for i := 0; i < len(g.Jao); i++ {
-		g.Jao[i].Draw(screen)
+
+	switch g.Mod {
+	case gamemanage.GameTitle:
+		//繪製開始圖片
+		screen.DrawImage(g.ImgMap[gamemanage.TitleImg], nil)
+
+	case gamemanage.Gaming:
+		// 繪製背景
+		screen.DrawImage(g.ImgMap[gamemanage.BackgroundImg], nil)
+		// 繪製球
+		g.Ball.Draw(screen, screenWidth, screenHeight)
+		//繪製饒
+		for i := 0; i < len(g.Jao); i++ {
+			g.Jao[i].Draw(screen)
+		}
+
+	case gamemanage.GameOver:
+		// 如果遊戲結束，顯示 Game Over
+		ebitenutil.DebugPrint(screen, "Game Over\nPress Enter to restart")
+
 	}
+
 	if len(g.ErrMsg) != 0 {
 		errMsg := fmt.Sprintf("errmsg:%s", g.ErrMsg[0])
 		ebitenutil.DebugPrint(screen, errMsg)
 		return
 	}
+	//偵錯訊息
 	ballProperty := fmt.Sprintf("ball width:%v,height:%v\n", g.Ball.Width(), g.Ball.Height())
 	ballLocation := fmt.Sprintf("ball x:%v,y:%v\n", g.Ball.X(), g.Ball.Y())
 	ballBeCollide := fmt.Sprintf("ballCollide:%v\n", g.Ball.BeCollided())
 
 	ebitenutil.DebugPrint(screen, ballProperty+ballLocation+ballBeCollide)
 
-	// 如果遊戲結束，顯示 Game Over
-	if g.Mod == gamemanage.GameOver {
-		ebitenutil.DebugPrint(screen, "Game Over\nPress Enter to restart")
-	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -110,11 +124,20 @@ func main() {
 	j := gameobject.NewJao(gameobject.Left, screenWidth, screenHeight)
 	jr := gameobject.NewJao(gameobject.Right, screenWidth, screenHeight)
 	s := []string{}
-	//處理背景圖片
-	img, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(resources.Back))
+	//處理開始圖片
+	titleimg, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(resources.Title))
 	if err != nil {
 		// log.Fatal(err)
 	}
+	//處理背景圖片
+	backgroundimg, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(resources.Back))
+	if err != nil {
+		// log.Fatal(err)
+	}
+
+	imgMap := make(map[gamemanage.ImgType]*ebiten.Image)
+	imgMap[gamemanage.TitleImg] = titleimg
+	imgMap[gamemanage.BackgroundImg] = backgroundimg
 	//處理網路連線
 	conn := socket.Connect()
 	defer conn.Close()
@@ -124,14 +147,13 @@ func main() {
 
 	//初始化結構體
 	game := &Game{
-		Jao:        jaoList,
-		Ball:       b,
-		ErrMsg:     s,
-		Network:    conn,
-		Background: img,
+		Jao:     jaoList,
+		Ball:    b,
+		ErrMsg:  s,
+		Network: conn,
+		ImgMap:  imgMap,
+		Mod:     gamemanage.GameTitle,
 	}
-	//重啟遊戲達成初始化
-	game.Restart()
 	// game.SetDebugMode()
 	//設置視窗大小及標題
 	ebiten.SetWindowSize(screenWidth, screenHeight)
@@ -147,3 +169,4 @@ func main() {
 //go:generate file2byteslice -input  Images/stickJaoleft.png -output resources/stickJaoleft.go -package resources -var StickJaoleft
 //go:generate file2byteslice -input  Images/stickJaoright.png -output resources/stickJaoright.go -package resources -var StickJaoright
 //go:generate file2byteslice -input  Images/back.png -output resources/back.go -package resources -var Back
+//go:generate file2byteslice -input  Images/title.png -output resources/title.go -package resources -var Title

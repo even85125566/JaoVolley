@@ -67,14 +67,16 @@ func (jao *Jao) Reset(screenWidth, screenHeight float64) {
 	jao.jumpspeed = 8
 	jao.IsJumping = false
 }
-func (jao *Jao) Update(screenHeight float64) {
+func (jao *Jao) Update(screenHeight, screenWidth float64) {
+	// 檢查球是否碰到畫面邊緣
+
 	switch jao.Type {
 	case Left:
 		// 控制饒的移動
-		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+		if ebiten.IsKeyPressed(ebiten.KeyLeft) && jao.x > 0 {
 			jao.x -= jao.speedx
 		}
-		if ebiten.IsKeyPressed(ebiten.KeyRight) {
+		if ebiten.IsKeyPressed(ebiten.KeyRight) && jao.x+float64(jao.width) < float64(screenWidth/2) {
 			jao.x += jao.speedx
 		}
 		//按下方向鍵上 啟動跳躍
@@ -85,10 +87,10 @@ func (jao *Jao) Update(screenHeight float64) {
 
 	case Right:
 		// 控制饒的移動
-		if ebiten.IsKeyPressed(ebiten.KeyA) {
+		if ebiten.IsKeyPressed(ebiten.KeyA) && jao.x > float64(screenWidth/2) {
 			jao.x -= jao.speedx
 		}
-		if ebiten.IsKeyPressed(ebiten.KeyD) {
+		if ebiten.IsKeyPressed(ebiten.KeyD) && jao.x+float64(jao.width) < screenWidth {
 			jao.x += jao.speedx
 		}
 		//按下方向鍵上 啟動跳躍
