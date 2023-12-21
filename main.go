@@ -19,13 +19,13 @@ const (
 )
 
 type Game struct {
-	Jao        []gameobject.Jao
-	Ball       gameobject.Ball
-	Mod        gamemanage.GameMod
-	Network    *socket.Network
-	ImgMap     map[gamemanage.ImgType]*ebiten.Image
-	Background *ebiten.Image
-	ErrMsg     []string
+	Jao       []gameobject.Jao
+	Ball      gameobject.Ball
+	Mod       gamemanage.GameMod
+	VolleyNet gameobject.VolleyNet
+	Network   *socket.Network
+	ImgMap    map[gamemanage.ImgType]*ebiten.Image
+	ErrMsg    []string
 }
 
 func (g *Game) Update() error {
@@ -38,9 +38,9 @@ func (g *Game) Update() error {
 
 		// 檢查球是否碰到底部，如果碰到，遊戲結束
 		for i := 0; i < len(g.Jao); i++ {
-			g.Jao[i].Update(screenHeight,screenWidth)
+			g.Jao[i].Update(screenHeight, screenWidth)
 		}
-		g.Ball.Update(screenWidth, screenHeight, g.Jao)
+		g.Ball.Update(screenWidth, screenHeight, g.Jao, g.VolleyNet)
 
 		if g.Ball.Y()+float64(g.Ball.Height()) > float64(screenHeight) {
 			g.Mod = gamemanage.GameOver
@@ -91,7 +91,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	//偵錯訊息
 	ballProperty := fmt.Sprintf("ball width:%v,height:%v\n", g.Ball.Width(), g.Ball.Height())
 	ballLocation := fmt.Sprintf("ball x:%v,y:%v\n", g.Ball.X(), g.Ball.Y())
-	ballBeCollide := fmt.Sprintf("ballCollide:%v\n", g.Ball.BeCollided())
+	ballBeCollide := fmt.Sprintf("net x:%v,net y:%v\n", g.VolleyNet.X(), g.VolleyNet.Y())
 
 	ebitenutil.DebugPrint(screen, ballProperty+ballLocation+ballBeCollide)
 
@@ -123,6 +123,8 @@ func main() {
 	b := gameobject.NewBall(screenWidth, screenHeight)
 	j := gameobject.NewJao(gameobject.Left, screenWidth, screenHeight)
 	jr := gameobject.NewJao(gameobject.Right, screenWidth, screenHeight)
+	n := gameobject.NewVolleyNet(screenWidth, screenHeight)
+
 	s := []string{}
 	//處理開始圖片
 	titleimg, _, err := ebitenutil.NewImageFromReader(bytes.NewReader(resources.Title))
@@ -147,12 +149,13 @@ func main() {
 
 	//初始化結構體
 	game := &Game{
-		Jao:     jaoList,
-		Ball:    b,
-		ErrMsg:  s,
-		Network: conn,
-		ImgMap:  imgMap,
-		Mod:     gamemanage.GameTitle,
+		Jao:       jaoList,
+		Ball:      b,
+		VolleyNet: n,
+		ErrMsg:    s,
+		Network:   conn,
+		ImgMap:    imgMap,
+		Mod:       gamemanage.GameTitle,
 	}
 	// game.SetDebugMode()
 	//設置視窗大小及標題

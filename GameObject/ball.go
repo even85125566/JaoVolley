@@ -6,6 +6,7 @@ import (
 	resources "jaovolleyball/Resources"
 	"log"
 	"math"
+	"math/rand"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -38,14 +39,14 @@ func NewBall(screenWidth, screenHeight float64) Ball {
 func (ball *Ball) Reset(screenWidth, screenHeight float64) {
 	ball.SetX(0)
 	ball.SetY(10)
-	ball.SetSpeed(3, 3)
-	ball.SetGravity(0.05)
+	ball.SetSpeed(3, 0.2)
+	ball.SetGravity(0.1)
 }
 func (ball *Ball) BeCollided() bool {
 	return ball.canBeCollided
 }
 
-func (ball *Ball) Update(screenWidth, screenHeight int, jao []Jao) {
+func (ball *Ball) Update(screenWidth, screenHeight int, jao []Jao, volleynet VolleyNet) {
 
 	// 移動球
 	ball.x += ball.speedx
@@ -66,22 +67,23 @@ func (ball *Ball) Update(screenWidth, screenHeight int, jao []Jao) {
 		ball.speedy = math.Abs(ball.speedy)
 	}
 	// 檢查球是否碰到饒
-	//TODO:身體下半部處理
-
 	for i := 0; i < len(jao); i++ {
-
 		if ball.canBeCollided && ball.y+float64(ball.height) > jao[i].y {
-
+			//幸運模式
+			if jao[i].LuckyMode {
+				ball.speedx = rand.Float64() * 10
+				ball.speedy = rand.Float64() * 10
+			}
 			switch {
 			// 左半邊
-			case IsOverlap(jao[i].LeftSide(), ball.GameObject):
+			case IsOverlap(jao[i].LeftSide(), ball.GameObject) && ball.BottomSideY() < jao[i].TopSideY():
 				ball.speedx = -math.Abs(ball.speedx)
 				ball.speedy = -ball.speedy
 				ball.canBeCollided = false
 				ball.collidedTime = time.Now()
 
 				//右半邊
-			case IsOverlap(jao[i].RightSide(), ball.GameObject):
+			case IsOverlap(jao[i].RightSide(), ball.GameObject) && ball.BottomSideY() < jao[i].TopSideY():
 				ball.speedx = math.Abs(ball.speedx)
 				ball.speedy = -ball.speedy
 				ball.canBeCollided = false
@@ -92,6 +94,28 @@ func (ball *Ball) Update(screenWidth, screenHeight int, jao []Jao) {
 			}
 		}
 
+	}
+	//檢查是否碰到牆壁
+	if ball.y+float64(ball.width) > volleynet.y {
+		switch {
+		// 左半邊
+		case IsOverlap(volleynet.GameObject, ball.GameObject) && ball.y+float64(ball.width) < volleynet.y+10:
+			ball.speedy = -ball.speedy
+
+		case IsOverlap(volleynet.LeftSide(), ball.GameObject):
+			ball.speedx = -math.Abs(ball.speedx)
+			ball.canBeCollided = false
+			ball.collidedTime = time.Now()
+
+			//右半邊
+		case IsOverlap(volleynet.RightSide(), ball.GameObject):
+			ball.speedx = math.Abs(ball.speedx)
+			ball.canBeCollided = false
+			ball.collidedTime = time.Now()
+
+		default:
+
+		}
 	}
 
 }

@@ -40,6 +40,7 @@ func (gameObject *GameObject) SetGravity(gravity float64) {
 	gameObject.gravity = gravity
 }
 
+//RightSide 供Overlap函數使用
 func (gameObject *GameObject) RightSide() GameObject {
 	var newObject GameObject
 	newObject = *gameObject
@@ -48,10 +49,26 @@ func (gameObject *GameObject) RightSide() GameObject {
 	return newObject
 
 }
+
+//LeftSide 供Overlap函數使用
 func (gameObject *GameObject) LeftSide() GameObject {
 	var newObject GameObject
 	newObject = *gameObject
 	newObject.width = gameObject.width / 2
 	return newObject
+
+}
+
+//TopSideY 取得物件上半部的最底端Y
+func (gameObject *GameObject) TopSideY() float64 {
+
+	return gameObject.y + float64(gameObject.height*2/3)
+
+}
+
+//TopSideY 取得物件上半部的最底端Y
+func (gameObject *GameObject) BottomSideY() float64 {
+
+	return gameObject.y + float64(gameObject.height)
 
 }

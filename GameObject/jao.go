@@ -12,6 +12,7 @@ import (
 type Jao struct {
 	GameObject
 	Type      Type
+	LuckyMode bool
 	jumpspeed float64
 	IsJumping bool
 }
@@ -59,8 +60,6 @@ func (jao *Jao) Reset(screenWidth, screenHeight float64) {
 		jao.SetX(screenWidth / 2)
 
 	}
-	log.Printf("reset饒方向%v", jao.Type)
-
 	jao.SetY(screenHeight - float64(jao.Height()))
 	jao.SetSpeed(4, 4)
 	jao.SetGravity(0.5)
@@ -68,8 +67,6 @@ func (jao *Jao) Reset(screenWidth, screenHeight float64) {
 	jao.IsJumping = false
 }
 func (jao *Jao) Update(screenHeight, screenWidth float64) {
-	// 檢查球是否碰到畫面邊緣
-
 	switch jao.Type {
 	case Left:
 		// 控制饒的移動
@@ -84,6 +81,13 @@ func (jao *Jao) Update(screenHeight, screenWidth float64) {
 			jao.IsJumping = true
 			jao.speedy = -jao.jumpspeed
 		}
+		//幸運模式
+		if ebiten.IsKeyPressed(ebiten.KeyShiftLeft) {
+			jao.LuckyMode = true
+		} else {
+			jao.LuckyMode = false
+
+		}
 
 	case Right:
 		// 控制饒的移動
@@ -97,6 +101,13 @@ func (jao *Jao) Update(screenHeight, screenWidth float64) {
 		if ebiten.IsKeyPressed(ebiten.KeyArrowUp) && !jao.IsJumping {
 			jao.IsJumping = true
 			jao.speedy = -jao.jumpspeed
+		}
+		//幸運模式
+		if ebiten.IsKeyPressed(ebiten.KeyShiftRight) {
+			jao.LuckyMode = true
+		} else {
+			jao.LuckyMode = false
+
 		}
 	}
 
